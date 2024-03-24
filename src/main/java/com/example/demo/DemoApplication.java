@@ -16,7 +16,8 @@ public class DemoApplication {
 		token = GatewayTokenService.getToken();
 		int output = BridgeService.registerCallbackUrl(token);
 		if (output == 200 || output == 201) {
-			String encryptedAdhaar = RSAPublicKeyEncryption.encryptTextUsingPublicKey("581403143354");
+			RSAPublicKeyEncryption encrypter = new RSAPublicKeyEncryption();
+			String encryptedAdhaar = encrypter.encryptTextUsingPublicKey("581403143354");
 			Map<String, Object> result = AadhaarOtpRequester.sendEncryptedAadhaar(encryptedAdhaar, token);
 			for (Map.Entry<String, Object> entry : result.entrySet()) {
 				System.out.println(entry.getKey() + ": " + entry.getValue());

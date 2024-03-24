@@ -1,6 +1,7 @@
 package com.example.demo;
 
 import javax.crypto.Cipher;
+import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -11,21 +12,19 @@ import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 
 public class RSAPublicKeyEncryption {
+    private static final String RSA_ALGORITHM = "RSA";
+    private static final String RSA_PADDING = "RSA/ECB/PKCS1Padding";
+    private String publicKeyStr; // Public Key as an instance attribute
 
-//    public static void main(String[] args) {
-//        try {
-//            String plainText = "581403143354";
-//            PublicKey publicKey = PublicKeyService.fetchPublicKey(); // This should return a PublicKey object
-//
-//            // Encrypt the plain text
-//            String encryptedText = encryptTextUsingPublicKey(plainText, publicKey);
-//            System.out.println("Encrypted output: " + encryptedText);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//    }
+    public String getPublicKeyStr() {
+        return publicKeyStr;
+    }
 
-    public static String encryptTextUsingPublicKey(String plainText) throws Exception {
+    public RSAPublicKeyEncryption() throws IOException, InterruptedException {
+        this.publicKeyStr = fetchPublicKey(); // Fetch the public key during object construction
+    }
+
+    private String fetchPublicKey() throws IOException, InterruptedException {
         // The URL from which to fetch the public key
         String url = "https://healthidsbx.abdm.gov.in/api/v2/auth/cert";
 
@@ -39,32 +38,25 @@ public class RSAPublicKeyEncryption {
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
         // Extracting the public key from response
-        String publicKeyStr = response.body();
-        System.out.println("Fetched Public Key: \n" + publicKeyStr);
+        String fetchedPublicKeyStr = response.body();
+        System.out.println("Fetched Public Key: \n" + fetchedPublicKeyStr);
 
         // Processing the public key
-        publicKeyStr = publicKeyStr.replaceAll("-----BEGIN PUBLIC KEY-----", "")
+        return fetchedPublicKeyStr.replaceAll("-----BEGIN PUBLIC KEY-----", "")
                 .replaceAll("-----END PUBLIC KEY-----", "")
                 .replaceAll("\\s+", "");
-        byte[] decodedKey = Base64.getDecoder().decode(publicKeyStr);
+    }
 
-        // Generate PublicKey object
-        X509EncodedKeySpec spec = new X509EncodedKeySpec(decodedKey);
-        KeyFactory factory = KeyFactory.getInstance("RSA");
-        PublicKey publicKey = factory.generatePublic(spec);
+    public String encryptTextUsingPublicKey(String data) throws Exception {
+        byte[] publicKeyBytes = Base64.getDecoder().decode(this.publicKeyStr);
+        X509EncodedKeySpec keySpec = new X509EncodedKeySpec(publicKeyBytes);
+        KeyFactory keyFactory = KeyFactory.getInstance(RSA_ALGORITHM);
+        PublicKey publicKey = keyFactory.generatePublic(keySpec);
 
-        // The string to encrypt
-        String stringToEncrypt = plainText;
-
-        // Encrypt the string
-        Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+        Cipher cipher = Cipher.getInstance(RSA_PADDING);
         cipher.init(Cipher.ENCRYPT_MODE, publicKey);
-        byte[] encryptedBytes = cipher.doFinal(stringToEncrypt.getBytes());
-
-        // Convert encrypted bytes to Base64 to get a readable form
-        String encryptedString = Base64.getEncoder().encodeToString(encryptedBytes);
-        System.out.println("Encrypted String: " + encryptedString);
-        return encryptedString;
+        byte[] encryptedBytes = cipher.doFinal(data.getBytes());
+        return Base64.getEncoder().encodeToString(encryptedBytes);
     }
 }
 

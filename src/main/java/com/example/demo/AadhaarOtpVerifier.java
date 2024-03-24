@@ -9,16 +9,16 @@ import org.springframework.web.client.RestTemplate;
 import java.util.HashMap;
 import java.util.Map;
 
-public class AadhaarOtpRequester {
-    public static Map<String, Object> sendEncryptedAadhaar(String encryptedAadhaar, String bearerToken) {
+public class AadhaarOtpVerifier {
+    public static Map<String, Object> sendEncryptedAadhaar(String encryptedAadhaarOtp, String bearerToken) {
         Map<String, Object> result = new HashMap<>();
         try {
             // Assume RSAPublicKeyEncryption.encryptTextUsingPublicKey and PublicKeyService.fetchPublicKey() are available
-            // String encryptedAadhaar = RSAPublicKeyEncryption.encryptTextUsingPublicKey(plainTextAadhaar);
+            // String encryptedAadhaarOtp = RSAPublicKeyEncryption.encryptTextUsingPublicKey(plainTextAadhaar);
 
             // Prepare the body of the request
             Map<String, String> requestBody = new HashMap<>();
-            requestBody.put("aadhaar", encryptedAadhaar);
+            requestBody.put("aadhaar", encryptedAadhaarOtp);
 
             // Set headers
             HttpHeaders headers = new HttpHeaders();
